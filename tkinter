@@ -1,0 +1,98 @@
+import tkinter as tk
+from tkinter import *
+from tkinter import filedialog
+from PIL import ImageTk, Image
+import moviepy.editor as mp
+import cv2
+import os
+import shutil
+import shelve
+
+root = Tk()
+
+
+
+frame = tk.Frame(root, bg='#45aaf2')
+
+lbl_pic_path = tk.Label(frame, text='Image Path:', padx=25, pady=25,
+                        font=('verdana',16), bg='#45aaf2')
+
+entry_pic_path = tk.Entry(frame, font=('verdana',16))
+btn_browse = tk.Button(frame, text='Select Image',bg='grey', fg='#ffffff',
+                       font=('verdana',16))
+
+
+lbl_vid_path = tk.Label(frame, text='Video Path:', padx=25, pady=25,
+                        font=('verdana',16), bg='#45aaf2')
+
+entry_vid_path = tk.Entry(frame, font=('verdana',16))
+btn_browseVid = tk.Button(frame, text='Select video',bg='grey', fg='#ffffff',font=('verdana',16))
+saveImgVid= tk.Button(frame, text='Save Files',bg='grey', fg='#ffffff',font=('verdana',16))
+
+
+
+def selectPic():
+    global img
+    global pathImg
+    global orgImg
+    orgImg = filedialog.askopenfilename(initialdir="/images", title="Select Image",
+                           filetypes=(("png images","*.png"),("jpg images","*.jpg")))
+    # img = cv2.imread(filename)
+    pathImg=r"C:\Users\avimo\OneDrive\Desktop\OpenCv\projects\ArAlbum\data_image"
+    entry_pic_path.delete(0, 'end')
+    entry_pic_path.insert(0, orgImg)
+
+def selectVid():
+    global vid
+    global pathVid
+    global orgVid
+    orgVid = filedialog.askopenfilename(initialdir="/videos", title="Select videos",filetypes=[("mp4 videos","*.mp4")])
+    # vid = cv2.VideoCapture(filename)
+    pathVid=r"C:\Users\avimo\OneDrive\Desktop\OpenCv\projects\ArAlbum\data_Vidoes"
+    entry_vid_path.delete(0, 'end')
+    entry_vid_path.insert(0, orgVid)
+
+    
+
+def addFile():
+    d = shelve.open("mydata.shlv")
+    count= d['counter']
+    if(orgImg.lower().endswith(('.png'))):
+        shutil.copy(orgImg, os.path.join(pathImg , "{}.png".format(count)))
+    else:
+        shutil.copy(orgImg, os.path.join(pathImg , "{}.jpg".format(count)))
+    vidPath=os.path.join(pathVid , "{}.mp4".format(count))
+    shutil.copy(orgVid, os.path.join(pathVid , "{}.mp4".format(count)))
+    my_clip = mp.VideoFileClip(vidPath)
+    pathSound=r"C:\Users\avimo\OneDrive\Desktop\OpenCv\projects\ArAlbum\data_Sound"
+    my_clip.audio.write_audiofile(os.path.join(pathSound , "{}.mp3".format(count)))
+
+    entry_pic_path.delete(0, 'end')
+    entry_pic_path.insert(0, "loaded!")
+    entry_vid_path.delete(0, 'end')
+    entry_vid_path.insert(0, "loaded!")
+    d['counter']=count+1
+    d.close
+
+    
+
+    
+
+
+
+btn_browse['command'] = selectPic
+btn_browseVid['command'] = selectVid
+saveImgVid['command'] = addFile
+
+frame.pack()
+
+lbl_pic_path.grid(row=0, column=0)
+lbl_vid_path.grid(row=1, column=0)
+entry_pic_path.grid(row=0, column=1, padx=(0,20))
+entry_vid_path.grid(row=1, column=1, padx=(0,20))
+btn_browse.grid(row=2, column=1,padx=25,pady=25 )
+btn_browseVid.grid(row=2, column=0,padx=25,pady=25)
+saveImgVid.grid(row=3, column=0, columnspan=2)
+
+
+root.mainloop()
